@@ -37,10 +37,6 @@ Sloaner Base64转换器是一个简单高效的Web工具，用于在文本与Bas
 ### 本地部署
 
 1. 克隆或下载本仓库
-```bash
-git clone https://github.com/yourusername/sloaner-base64-converter.git
-```
-
 2. 直接在浏览器中打开`index.html`文件
 ```bash
 # 例如使用Visual Studio Code的Live Server插件
