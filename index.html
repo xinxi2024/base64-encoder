@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sloaner - Base64转换器</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #3a86ff;
+      --primary-dark: #2a68d4;
+      --primary-gradient: linear-gradient(135deg, #3a86ff, #5d5fef);
+      --secondary: #ff006e;
+      --dark: #212529;
+      --light: #f8f9fa;
+      --success: #38b000;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background-color: #f0f5ff;
+      color: var(--dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    header {
+      background-color: white;
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    header::before {
+      content: "";
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      width: 100px;
+      height: 100px;
+      background: var(--primary-gradient);
+      opacity: 0.1;
+      border-radius: 50%;
+      z-index: 0;
+    }
+    
+    .logo-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .logo {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: transparent;
+      background: var(--primary-gradient);
+      background-clip: text;
+      -webkit-background-clip: text;
+      margin-left: 0.5rem;
+      position: relative;
+      text-shadow: 0 2px 4px rgba(58, 134, 255, 0.2);
+      transition: all 0.3s ease;
+    }
+    
+    .logo:hover {
+      transform: translateY(-2px);
+      text-shadow: 0 4px 8px rgba(58, 134, 255, 0.3);
+    }
+    
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--primary-gradient);
+      border-radius: 12px;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 1.8rem;
+      box-shadow: 0 4px 10px rgba(58, 134, 255, 0.3);
+      transition: all 0.3s ease;
+      animation: pulse 2s infinite alternate;
+    }
+    
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 4px 10px rgba(58, 134, 255, 0.3);
+        transform: scale(1);
+      }
+      100% {
+        box-shadow: 0 6px 15px rgba(58, 134, 255, 0.5);
+        transform: scale(1.05);
+      }
+    }
+    
+    .logo-icon:hover {
+      transform: rotate(10deg) scale(1.05);
+      box-shadow: 0 6px 15px rgba(58, 134, 255, 0.4);
+      animation: none;
+    }
+    
+    .tagline {
+      text-align: center;
+      color: #666;
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      position: relative;
+      z-index: 1;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    
+    .tagline i {
+      color: var(--primary);
+    }
+    
+    main {
+      max-width: 1000px;
+      width: 100%;
+      margin: 2rem auto;
+      padding: 0 1rem;
+      flex: 1;
+    }
+    
+    .tabs {
+      display: flex;
+      margin-bottom: 1.5rem;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .tab {
+      flex: 1;
+      padding: 1rem;
+      text-align: center;
+      background-color: #e9ecef;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+    }
+    
+    .tab.active {
+      background-color: white;
+      color: var(--primary);
+    }
+    
+    .tab:hover:not(.active) {
+      background-color: #dee2e6;
+    }
+    
+    .tab-content {
+      display: none;
+      background-color: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .input-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    .input-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #495057;
+    }
+    
+    textarea {
+      width: 100%;
+      min-height: 150px;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 2px solid #ced4da;
+      resize: vertical;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+    
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    
+    .file-input-container {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+    
+    .file-input {
+      position: absolute;
+      width: 0.1px;
+      height: 0.1px;
+      opacity: 0;
+      overflow: hidden;
+      z-index: -1;
+    }
+    
+    .file-input-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 1.5rem;
+      background-color: #e9ecef;
+      color: #495057;
+      border: 2px dashed #ced4da;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+    
+    .file-input-label:hover {
+      background-color: #dee2e6;
+      border-color: var(--primary);
+    }
+    
+    .file-input-label span {
+      margin-left: 0.5rem;
+    }
+    
+    .buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+    
+    .btn {
+      padding: 0.8rem 1.5rem;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .btn:hover {
+      background-color: var(--primary-dark);
+    }
+    
+    .btn-outline {
+      background-color: white;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+    }
+    
+    .btn-outline:hover {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .result-container {
+      margin-top: 2rem;
+      display: none;
+    }
+    
+    .result-container.active {
+      display: block;
+    }
+    
+    .result-box {
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      padding: 1.5rem;
+      border: 2px solid #ced4da;
+      margin-bottom: 1rem;
+      word-break: break-all;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .image-preview {
+      max-width: 100%;
+      max-height: 300px;
+      margin: 1rem 0;
+      display: block;
+    }
+    
+    .success-message {
+      background-color: rgba(56, 176, 0, 0.1);
+      color: var(--success);
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    
+    .success-message.active {
+      display: block;
+      animation: fadeOut 3s forwards;
+      animation-delay: 2s;
+    }
+    
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+    
+    footer {
+      background-color: white;
+      text-align: center;
+      padding: 1.5rem;
+      margin-top: 2rem;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    footer p {
+      color: #6c757d;
+    }
+    
+    .icon {
+      display: inline-block;
+      width: 1.5rem;
+      height: 1.5rem;
+      margin-right: 0.5rem;
+      vertical-align: middle;
+    }
+    
+    @media (max-width: 768px) {
+      .buttons {
+        flex-direction: column;
+      }
+      
+      .tab {
+        padding: 0.8rem 0.5rem;
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-container">
+      <div class="logo-icon">S</div>
+      <div class="logo">Sloaner</div>
+    </div>
+    <p class="tagline"><i class="fas fa-shield-alt"></i> 快速安全的Base64转换工具 <i class="fas fa-bolt"></i></p>
+  </header>
+  
+  <main>
+    <div class="tabs">
+      <div class="tab active" data-tab="text">文本转换</div>
+      <div class="tab" data-tab="image">图片转换</div>
+    </div>
+    
+    <div class="tab-content active" id="text-tab">
+      <div class="input-group">
+        <label class="input-label">输入要编码的文本或要解码的Base64:</label>
+        <textarea id="text-input" placeholder="在此处输入或粘贴内容..."></textarea>
+      </div>
+      
+      <div class="buttons">
+        <button class="btn" id="encode-text-btn">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M5,3L3,5V19L5,21H19L21,19V5L19,3H5M6,5H18L19,6V18L18,19H6L5,18V6L6,5M8,7V9H16V7H8M8,11V13H16V11H8M8,15V17H16V15H8Z" />
+          </svg>
+          编码为Base64
+        </button>
+        <button class="btn" id="decode-text-btn">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,5V19H5V5H19M17,17H7V7H17V17M15,15V9H9V15H15M13,13H11V11H13V13Z" />
+          </svg>
+          从Base64解码
+        </button>
+        <button class="btn btn-outline" id="clear-text-btn">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" />
+          </svg>
+          清空
+        </button>
+      </div>
+      
+      <div class="result-container" id="text-result-container">
+        <div class="success-message" id="text-success-message">已复制到剪贴板!</div>
+        <label class="input-label">结果:</label>
+        <div class="result-box" id="text-result"></div>
+        <button class="btn" id="copy-text-btn">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z" />
+          </svg>
+          复制到剪贴板
+        </button>
+      </div>
+    </div>
+    
+    <div class="tab-content" id="image-tab">
+      <div class="file-input-container">
+        <input type="file" id="image-input" class="file-input" accept="image/*">
+        <label for="image-input" class="file-input-label">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M13,9H18.5L13,3.5V9M6,2H14L20,8V20A2,2 0 0,1 18,22H6C4.89,22 4,21.1 4,20V4C4,2.89 4.89,2 6,2M6,20H15L18,20V12L14,16L12,14L6,20M8,9A2,2 0 0,0 6,11A2,2 0 0,0 8,13A2,2 0 0,0 10,11A2,2 0 0,0 8,9Z" />
+          </svg>
+          <span>点击选择图片或拖拽至此</span>
+        </label>
+      </div>
+      
+      <div id="image-preview-container" style="display: none;">
+        <label class="input-label">图片预览:</label>
+        <img id="image-preview" class="image-preview" src="" alt="Image preview">
+      </div>
+      
+      <div class="input-group" style="margin-top: 1.5rem;">
+        <label class="input-label">Base64 数据:</label>
+        <textarea id="base64-input" placeholder="粘贴Base64编码到这里进行解码..."></textarea>
+      </div>
+      
+      <div class="buttons">
+        <button class="btn" id="encode-image-btn">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M5,3L3,5V19L5,21H19L21,19V5L19,3H5M6,5H18L19,6V18L18,19H6L5,18V6L6,5M8,7V9H16V7H8M8,11V13H16V11H8M8,15V17H16V15H8Z" />
+          </svg>
+          将图片编码为Base64
+        </button>
+        <button class="btn" id="decode-image-btn">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3M19,5V19H5V5H19M17,17H7V7H17V17M15,15V9H9V15H15M13,13H11V11H13V13Z" />
+          </svg>
+          将Base64解码为图片
+        </button>
+        <button class="btn btn-outline" id="clear-image-btn">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" />
+          </svg>
+          清空
+        </button>
+      </div>
+      
+      <div class="result-container" id="image-result-container">
+        <div class="success-message" id="image-success-message">已复制到剪贴板!</div>
+        <label class="input-label">Base64 结果:</label>
+        <div class="result-box" id="image-result"></div>
+        <button class="btn" id="copy-image-btn">
+          <svg class="icon" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z" />
+          </svg>
+          复制到剪贴板
+        </button>
+      </div>
+      
+      <div class="result-container" id="decoded-image-container" style="display: none;">
+        <label class="input-label">已解码的图片:</label>
+        <img id="decoded-image" class="image-preview" src="" alt="Decoded image">
+      </div>
+    </div>
+  </main>
+  
+  <footer>
+    <p>© 2025 Sloaner Base64转换器 | 安全 & 高效</p>
+  </footer>
+
+  <script>
+    // Tab switching functionality
+    const tabs = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const tabId = tab.getAttribute('data-tab');
+        
+        // Update active tab
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        
+        // Update active content
+        tabContents.forEach(content => content.classList.remove('active'));
+        document.getElementById(`${tabId}-tab`).classList.add('active');
+      });
+    });
+    
+    // Text conversion functionality
+    const textInput = document.getElementById('text-input');
+    const textResult = document.getElementById('text-result');
+    const textResultContainer = document.getElementById('text-result-container');
+    const textSuccessMessage = document.getElementById('text-success-message');
+    
+    document.getElementById('encode-text-btn').addEventListener('click', () => {
+      const text = textInput.value;
+      if (!text) return;
+      
+      try {
+        // 使用TextEncoder处理UTF-8编码，确保中文等特殊字符正确处理
+        const encoder = new TextEncoder();
+        const bytes = encoder.encode(text);
+        let binary = '';
+        for (let i = 0; i < bytes.length; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        const encoded = btoa(binary);
+        
+        textResult.textContent = encoded;
+        textResultContainer.classList.add('active');
+      } catch (error) {
+        textResult.textContent = '错误：无法编码文本。请确保使用有效字符。';
+        textResultContainer.classList.add('active');
+      }
+    });
+    
+    document.getElementById('decode-text-btn').addEventListener('click', () => {
+      const text = textInput.value;
+      if (!text) return;
+      
+      try {
+        let base64String = text;
+        
+        // 检查是否为Data URL格式，如果是则提取Base64部分
+        if (text.startsWith('data:')) {
+          const commaIndex = text.indexOf(',');
+          if (commaIndex !== -1) {
+            base64String = text.substring(commaIndex + 1);
+          }
+        }
+        
+        // 解码Base64并处理UTF-8字符
+        const binary = atob(base64String);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+          bytes[i] = binary.charCodeAt(i);
+        }
+        const decoder = new TextDecoder();
+        const decoded = decoder.decode(bytes);
+        
+        textResult.textContent = decoded;
+        textResultContainer.classList.add('active');
+      } catch (error) {
+        textResult.textContent = '错误：无法解码。请确保输入有效的Base64格式。';
+        textResultContainer.classList.add('active');
+      }
+    });
+    
+    document.getElementById('clear-text-btn').addEventListener('click', () => {
+      textInput.value = '';
+      textResult.textContent = '';
+      textResultContainer.classList.remove('active');
+    });
+    
+    document.getElementById('copy-text-btn').addEventListener('click', () => {
+      const result = textResult.textContent;
+      if (!result) return;
+      
+      navigator.clipboard.writeText(result).then(() => {
+        textSuccessMessage.classList.add('active');
+        setTimeout(() => {
+          textSuccessMessage.classList.remove('active');
+        }, 5000);
+      });
+    });
+    
+    // Image conversion functionality
+    const imageInput = document.getElementById('image-input');
+    const imagePreview = document.getElementById('image-preview');
+    const imagePreviewContainer = document.getElementById('image-preview-container');
+    const imageResult = document.getElementById('image-result');
+    const imageResultContainer = document.getElementById('image-result-container');
+    const imageSuccessMessage = document.getElementById('image-success-message');
+    const base64Input = document.getElementById('base64-input');
+    const decodedImage = document.getElementById('decoded-image');
+    const decodedImageContainer = document.getElementById('decoded-image-container');
+    let selectedFile = null;
+    
+    imageInput.addEventListener('change', (event) => {
+      selectedFile = event.target.files[0];
+      if (!selectedFile) return;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        imagePreview.src = e.target.result;
+        imagePreviewContainer.style.display = 'block';
+      };
+      reader.readAsDataURL(selectedFile);
+    });
+    
+    document.getElementById('encode-image-btn').addEventListener('click', () => {
+      if (!selectedFile) return;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target.result;
+        imageResult.textContent = result;
+        imageResultContainer.classList.add('active');
+      };
+      reader.readAsDataURL(selectedFile);
+    });
+    
+    document.getElementById('decode-image-btn').addEventListener('click', () => {
+      const base64Data = base64Input.value.trim();
+      if (!base64Data) return;
+      
+      try {
+        let imageData = base64Data;
+        
+        // 检查是否已经是Data URL格式
+        if (!base64Data.startsWith('data:')) {
+          // 尝试智能判断图片格式
+          let mimeType = detectMimeType(base64Data);
+          
+          // 转换为Data URL
+          imageData = `data:${mimeType};base64,${base64Data}`;
+        }
+        
+        // 显示解码后的图片
+        decodedImage.src = imageData;
+        decodedImageContainer.style.display = 'block';
+      } catch (error) {
+        alert('无法解码为图片。请确保输入的是有效的Base64编码。');
+      }
+    });
+    
+    // 根据Base64编码前缀检测MIME类型
+    function detectMimeType(base64String) {
+      // 去除可能的空格和换行符
+      const cleanBase64 = base64String.replace(/\s/g, '');
+      
+      // 检查常见的图片格式特征
+      // JPEG
+      if (cleanBase64.startsWith('/9j/')) {
+        return 'image/jpeg';
+      }
+      // PNG
+      else if (cleanBase64.startsWith('iVBORw0KGgo')) {
+        return 'image/png';
+      }
+      // GIF
+      else if (cleanBase64.startsWith('R0lGOD') || cleanBase64.startsWith('R0lGOD')) {
+        return 'image/gif';
+      }
+      // WebP
+      else if (cleanBase64.startsWith('UklGR')) {
+        return 'image/webp';
+      }
+      // SVG
+      else if (cleanBase64.indexOf('PHN2Zz') !== -1) {
+        return 'image/svg+xml';
+      }
+      // 默认返回通用图片类型
+      return 'image/png';
+    }
+    
+    document.getElementById('clear-image-btn').addEventListener('click', () => {
+      imageInput.value = '';
+      imagePreview.src = '';
+      imagePreviewContainer.style.display = 'none';
+      imageResult.textContent = '';
+      imageResultContainer.classList.remove('active');
+      base64Input.value = '';
+      decodedImage.src = '';
+      decodedImageContainer.style.display = 'none';
+      selectedFile = null;
+    });
+    
+    document.getElementById('copy-image-btn').addEventListener('click', () => {
+      const result = imageResult.textContent;
+      if (!result) return;
+      
+      navigator.clipboard.writeText(result).then(() => {
+        imageSuccessMessage.classList.add('active');
+        setTimeout(() => {
+          imageSuccessMessage.classList.remove('active');
+        }, 5000);
+      });
+    });
+    
+    // Drag and drop functionality for image
+    const fileInputLabel = document.querySelector('.file-input-label');
+    
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      fileInputLabel.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+      fileInputLabel.addEventListener(eventName, highlightDrop, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+      fileInputLabel.addEventListener(eventName, unhighlightDrop, false);
+    });
+    
+    function highlightDrop() {
+      fileInputLabel.style.backgroundColor = '#dee2e6';
+      fileInputLabel.style.borderColor = '#3a86ff';
+    }
+    
+    function unhighlightDrop() {
+      fileInputLabel.style.backgroundColor = '#e9ecef';
+      fileInputLabel.style.borderColor = '#ced4da';
+    }
+    
+    fileInputLabel.addEventListener('drop', handleDrop, false);
+    
+    function handleDrop(e) {
+      const dt = e.dataTransfer;
+      const files = dt.files;
+      
+      if (files.length > 0 && files[0].type.startsWith('image/')) {
+        imageInput.files = files;
+        const event = new Event('change');
+        imageInput.dispatchEvent(event);
+      }
+    }
+    
+    // 设置占位符文本
+    document.addEventListener('DOMContentLoaded', () => {
+      // 设置文本输入的占位符
+      document.getElementById('text-input').setAttribute('placeholder', '在此处输入或粘贴内容...');
+      
+      // 设置Base64输入的占位符
+      const base64Input = document.getElementById('base64-input');
+      if (base64Input) {
+        base64Input.setAttribute('placeholder', '粘贴Base64编码到这里进行解码...');
+      }
+    });
+  </script>
+</body>
+</html>
